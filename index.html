@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Clock</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            display: grid;
+            grid-template-rows: 85% 15%;
+            grid-template-columns: 100%;
+            font-size: 1.5rem;
+        }
+
+        main,
+        footer {
+            padding-left: 20%;
+            padding-right: 20%;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <canvas height="300" width="300"></canvas>
+        <p class="time">Time</p>
+        <p class="timezone">Timezone</p>
+        <p class="date">Date</p>
+    </main>
+    <footer>
+        <p>Digital Clock</p>
+        <p>Rafli Athala Jaskandi - 2301943402</p>
+        <a href="http://github.com/VladRafli" target="_blank" rel="noopener noreferrer">Github</a>
+    </footer>
+    <script>
+        // Init user-declared date object
+        let date = {}
+        // Function to Get Current Time
+        function getTime() {
+            const fullDate = new Date().toString().split(' ')
+            const seperateTime = fullDate[4].split(':')
+            date = {
+                day: fullDate[0],
+                month: fullDate[1],
+                date: fullDate[2],
+                year: fullDate[3],
+                sec: seperateTime[0],
+                min: seperateTime[1],
+                hour: seperateTime[2],
+                time: fullDate[4],
+                timeZone: fullDate[5],
+                timeZoneName: `${fullDate[6].replace('(', '')} ${fullDate[7]} ${fullDate[8].replace(')', '')}`
+            }
+            // Debug
+            console.log(date)
+            // 
+            if (date.hour >= 12) {
+                document.querySelector('title').innerHTML = date.time + ' AM'
+                document.querySelector('main > p.time').innerHTML = date.time + ' AM'
+            } else {
+                document.querySelector('title').innerHTML = date.time - 12 + ' AM'
+                document.querySelector('main > p.time').innerHTML = date.time - 12 + ' AM'
+            }
+        }
+        // Function to Render Clock
+        // Reference: https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Basic_animations
+        function clock() {
+            let now = new Date()
+            const ctx = canvas.getContext('2d')
+            ctx.save()
+            ctx.clearRect(0, 0, 300, 300)
+            ctx.translate(150, 150)
+            ctx.scale(0.4, 0.4)
+            ctx.rotate(-Math.PI / 2)
+            ctx.strokeStyle = 'black';
+            ctx.fillStyle = 'white';
+            ctx.lineWidth = 8;
+            ctx.lineCap = 'round';
+
+            // Hour Mark
+            ctx.save()
+            for (let i = 0; i < 12; i++) {
+                ctx.beginPath();
+                ctx.rotate(Math.PI / 6);
+                ctx.moveTo(280, 0);
+                ctx.lineTo(260, 0);
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // Minute marks
+            ctx.save();
+            ctx.lineWidth = 5;
+            for (i = 0; i < 60; i++) {
+                if (i % 5 != 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(280, 0);
+                    ctx.lineTo(270, 0);
+                    ctx.stroke();
+                }
+                ctx.rotate(Math.PI / 30);
+            }
+            ctx.restore();
+
+            let sec = now.getSeconds();
+            let min = now.getMinutes();
+            let hr = now.getHours();
+
+            hr = hr >= 12 ? hr - 12 : hr;
+
+            ctx.fillStyle = 'black'
+
+            // write Hours
+            ctx.save();
+            ctx.rotate(hr * (Math.PI / 6) + (Math.PI / 360) * min + (Math.PI / 21600) * sec);
+            ctx.lineWidth = 14;
+            ctx.beginPath();
+            ctx.moveTo(-20, 0);
+            ctx.lineTo(120, 0);
+            ctx.stroke();
+            ctx.restore();
+
+            // write Minutes
+            ctx.save();
+            ctx.rotate((Math.PI / 30) * min + (Math.PI / 1800) * sec);
+            ctx.lineWidth = 10;
+            ctx.beginPath();
+            ctx.moveTo(-28, 0);
+            ctx.lineTo(202, 0);
+            ctx.stroke();
+            ctx.restore();
+
+            // Write seconds
+            ctx.save();
+            ctx.rotate(sec * Math.PI / 30);
+            ctx.strokeStyle = '#D40000';
+            ctx.fillStyle = '#D40000';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(-30, 0);
+            ctx.lineTo(205, 0);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(0, 0, 10, 0, Math.PI * 2, true);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+            ctx.arc(0, 0, 3, 0, Math.PI * 2, true);
+            ctx.fill();
+            ctx.restore();
+
+            ctx.beginPath();
+            ctx.lineWidth = 14;
+            ctx.arc(0, 0, 300, 0, Math.PI * 2, true);
+            ctx.stroke();
+
+            ctx.restore();
+
+            window.requestAnimationFrame(clock)
+        }
+        getTime()
+        setInterval(getTime, 500)
+        // Display time, timezone and date on page and display time on page title
+        if (date.hour >= 12) {
+            document.querySelector('title').innerHTML = date.time + ' AM'
+            document.querySelector('main > p.time').innerHTML = date.time + ' AM'
+        } else {
+            document.querySelector('title').innerHTML = date.time - 12 + ' AM'
+            document.querySelector('main > p.time').innerHTML = date.time - 12 + ' AM'
+        }
+        document.querySelector('main > p.timezone').innerHTML = `${date.timeZoneName} (${date.timeZone})`
+        document.querySelector('main > p.date').innerHTML = `${date.day} - ${date.date}/${date.month}/${date.year}`
+        // Get canvas element
+        const canvas = document.querySelector('canvas')
+        // Check for support
+        if (canvas.getContext) {
+            // Render Clock
+            clock()
+            window.requestAnimationFrame(clock)
+        } else {
+            document.querySelector('main > canvas').innerHTML = '<p>Your browser doesn\'t support Canvas element</p>'
+        }
+    </script>
+</body>
+
+</html>
